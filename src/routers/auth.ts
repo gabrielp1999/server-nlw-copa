@@ -10,6 +10,10 @@ export async function authRoutes(fastify: FastifyInstance) {
       onRequest: [authenticate],
     },
     async (request) => {
+      await authenticate(request);
+
+      console.log("foi");
+
       return { user: request.user };
     }
   );
@@ -21,17 +25,16 @@ export async function authRoutes(fastify: FastifyInstance) {
 
     const { access_token } = createUserBody.parse(request.body);
 
-    const userResponse = await fetch(
+    const userData = await fetch(
       "https://www.googleapis.com/oauth2/v2/userinfo",
       {
-        method: "GET",
         headers: {
           Authorization: `Bearer ${access_token}`,
         },
       }
-    );
-
-    const userData = await userResponse.json();
+    )
+      .then((response) => response.json())
+      .then((data) => data);
 
     const userInfoSchema = z.object({
       id: z.string(),
